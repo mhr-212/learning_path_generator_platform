@@ -1,4 +1,4 @@
-# Learning Path Generator
+# Learning Path Generator & Platform
 
 A comprehensive Django REST API application for creating personalized learning journeys and managing educational content. This platform allows users to create custom learning paths, discover courses, track progress, and build a community around shared learning goals.
 
@@ -19,6 +19,38 @@ A comprehensive Django REST API application for creating personalized learning j
 - **Admin Interface**: Full-featured Django admin for content management
 - **Database Models**: Well-designed relational database schema
 - **Authentication & Authorization**: Token-based authentication with proper permissions
+
+  
+## 📷 Images
+
+- **Home Page**
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/387d1368-87e0-47c2-b5bb-861458d770ce" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/d82aa81a-8246-4b69-9ae3-a06b23875407" />
+
+- **Registeration Page**
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/1034464b-a4e7-428f-9d1e-42467f8ce55c" />
+
+- **Login Page**
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/5f379883-7d3a-4f78-bcd8-a548bf1f96ad" />
+
+- **Dashboard Page**
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/01bdc95e-083a-4454-989b-c6a917b67677" />
+
+- **Learning Paths Page**
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/c07aa1da-46c6-45d9-a686-50bdbe02236b" />
+
+- **Courses Page**
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/5fa90031-c667-4c6d-b9e8-5ecc9923fdef" />
+
+- **Categories Page**
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/11b647f2-c118-475d-8d62-27c5dc0742fc" />
+
+- **Path Overview Page**
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/3de14bcd-4528-4266-8ee4-ad4bec366f28" />
+
+- **Course Details Page**
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/bf650c04-ee18-4c18-a9f6-5c002a23dc89" />
 
 ## 🛠 Technologies Used
 
@@ -280,9 +312,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Bootstrap for the responsive design framework
 - All the open-source libraries that made this project possible
 
-## 📞 Support
-
-For support, email support@learningpathgenerator.com or create an issue in the repository.
 
 ## 🔮 Future Enhancements
 
@@ -299,4 +328,4 @@ For support, email support@learningpathgenerator.com or create an issue in the r
 
 ---
 
-**Happy Learning! 🎓**
+**Built with ❤️ using Django**
