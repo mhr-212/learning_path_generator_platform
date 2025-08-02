@@ -1,0 +1,478 @@
+{% extends 'base/base.html' %}
+
+{% block title %}My Learning Paths - Learning Path Generator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h1 class="mb-0">My Learning Paths</h1>
+            <p class="lead text-muted">Manage the learning paths you have created.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPathModal">
+                <i class="fas fa-plus-circle me-2"></i>Create New Path
+            </button>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="input-group">
+                <input type="text" id="search-input" class="form-control" placeholder="Search your learning paths...">
+                <button class="btn btn-primary" type="button" id="search-button">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <select id="difficulty-filter" class="form-select">
+                <option value="">All Difficulties</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select id="status-filter" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select id="sort-by" class="form-select">
+                <option value="-created_at">Newest First</option>
+                <option value="created_at">Oldest First</option>
+                <option value="title">Title (A-Z)</option>
+                <option value="-title">Title (Z-A)</option>
+                <option value="estimated_duration_hours">Shortest Duration</option>
+                <option value="-estimated_duration_hours">Longest Duration</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-outline-secondary w-100" id="apply-filters-button">
+                <i class="fas fa-filter me-2"></i>Apply Filters
+            </button>
+        </div>
+    </div>
+    
+    <div id="my-learning-paths-list" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <!-- My learning paths will be loaded here -->
+    </div>
+    
+    <div id="pagination-controls" class="d-flex justify-content-center mt-4">
+        <button class="btn btn-outline-primary me-2" id="prev-page" disabled>Previous</button>
+        <span class="align-self-center" id="page-info">Page 1 of 1</span>
+        <button class="btn btn-outline-primary ms-2" id="next-page" disabled>Next</button>
+    </div>
+    
+    <div id="loading-spinner" class="text-center mt-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading your learning paths...</p>
+    </div>
+    
+    <div id="no-results" class="text-center mt-5" style="display: none;">
+        <p class="lead text-muted">You haven't created any learning paths yet.</p>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPathModal">
+            <i class="fas fa-plus-circle me-2"></i>Create Your First Path
+        </button>
+    </div>
+</div>
+
+<!-- Create/Edit Learning Path Modal -->
+<div class="modal fade" id="createPathModal" tabindex="-1" aria-labelledby="createPathModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createPathModalLabel">Create New Learning Path</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="learning-path-form">
+                    <input type="hidden" id="path-id">
+                    <div class="mb-3">
+                        <label for="path-title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="path-title-input" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="path-description" class="form-label">Description</label>
+                        <textarea class="form-control" id="path-description-input" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="path-difficulty" class="form-label">Difficulty Level</label>
+                        <select class="form-select" id="path-difficulty-input" required>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="path-duration" class="form-label">Estimated Duration (hours)</label>
+                        <input type="number" class="form-control" id="path-duration-input" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="path-status" class="form-label">Status</label>
+                        <select class="form-select" id="path-status-input" required>
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="path-tags" class="form-label">Tags (comma-separated)</label>
+                        <input type="text" class="form-control" id="path-tags-input">
+                    </div>
+                    <div class="mb-3">
+                        <label for="path-prerequisites" class="form-label">Prerequisites</label>
+                        <textarea class="form-control" id="path-prerequisites-input" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="path-objectives" class="form-label">Learning Objectives</label>
+                        <textarea class="form-control" id="path-objectives-input" rows="3" required></textarea>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="path-is-public-input">
+                        <label class="form-check-label" for="path-is-public-input">
+                            Make Public (visible to other users)
+                        </label>
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">Courses in Path</h5>
+                    <div id="courses-in-path-container">
+                        <!-- Courses will be dynamically added here -->
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+                        <i class="fas fa-plus me-1"></i>Add Course
+                    </button>
+                    
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Learning Path</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Course Modal -->
+<div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="addCourseModalLabel">Add Course to Path</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" id="course-search-input" class="form-control" placeholder="Search courses by title or instructor...">
+                </div>
+                <div id="course-search-results" class="list-group">
+                    <!-- Search results will be loaded here -->
+                </div>
+                <div id="course-search-pagination" class="d-flex justify-content-center mt-3">
+                    <button class="btn btn-outline-primary me-2" id="course-prev-page" disabled>Previous</button>
+                    <span class="align-self-center" id="course-page-info">Page 1 of 1</span>
+                    <button class="btn btn-outline-primary ms-2" id="course-next-page" disabled>Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    requireAuth();
+});
+
+let currentPage = 1;
+let totalPages = 1;
+let currentCourseSearchPage = 1;
+let totalCourseSearchPages = 1;
+let selectedCourses = {}; // Store courses added to the path {course_id: course_object}
+
+document.addEventListener("DOMContentLoaded", function() {
+    loadMyLearningPaths();
+    
+    document.getElementById("search-button").addEventListener("click", function() {
+        currentPage = 1;
+        loadMyLearningPaths();
+    });
+    
+    document.getElementById("search-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            currentPage = 1;
+            loadMyLearningPaths();
+        }
+    });
+    
+    document.getElementById("apply-filters-button").addEventListener("click", function() {
+        currentPage = 1;
+        loadMyLearningPaths();
+    });
+    
+    document.getElementById("prev-page").addEventListener("click", function() {
+        if (currentPage > 1) {
+            currentPage--;
+            loadMyLearningPaths();
+        }
+    });
+    
+    document.getElementById("next-page").addEventListener("click", function() {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadMyLearningPaths();
+        }
+    });
+    
+    // Modal related event listeners
+    const createPathModal = document.getElementById("createPathModal");
+    createPathModal.addEventListener("show.bs.modal", function (event) {
+        const button = event.relatedTarget; // Button that triggered the modal
+        const pathId = button ? button.getAttribute("data-path-id") : null; // Extract info from data-path-id attribute
+        
+        resetLearningPathForm();
+        if (pathId) {
+            document.getElementById("createPathModalLabel").textContent = "Edit Learning Path";
+            loadLearningPathForEdit(pathId);
+        } else {
+            document.getElementById("createPathModalLabel").textContent = "Create New Learning Path";
+        }
+    });
+    
+    document.getElementById("learning-path-form").addEventListener("submit", handleLearningPathSubmit);
+    
+    // Course search in modal
+    document.getElementById("course-search-input").addEventListener("input", function() {
+        currentCourseSearchPage = 1;
+        searchCoursesForModal();
+    });
+    document.getElementById("course-prev-page").addEventListener("click", function() {
+        if (currentCourseSearchPage > 1) {
+            currentCourseSearchPage--;
+            searchCoursesForModal();
+        }
+    });
+    document.getElementById("course-next-page").addEventListener("click", function() {
+        if (currentCourseSearchPage < totalCourseSearchPages) {
+            currentCourseSearchPage++;
+            searchCoursesForModal();
+        }
+    });
+});
+
+async function loadMyLearningPaths() {
+    const search = document.getElementById("search-input").value;
+    const difficulty = document.getElementById("difficulty-filter").value;
+    const status = document.getElementById("status-filter").value;
+    const ordering = document.getElementById("sort-by").value;
+    
+    const params = {
+        page: currentPage,
+        search: search,
+        difficulty_level: difficulty,
+        status: status,
+        ordering: ordering,
+    };
+    
+    showLoading("my-learning-paths-list");
+    const result = await api.getMyLearningPaths(params);
+    hideLoading("my-learning-paths-list");
+    
+    const learningPathsList = document.getElementById("my-learning-paths-list");
+    const noResults = document.getElementById("no-results");
+    
+    if (result.success && result.data.results.length > 0) {
+        learningPathsList.innerHTML = result.data.results.map(path => createLearningPathCard(path, true)).join("");
+        totalPages = Math.ceil(result.data.count / 20); // Assuming page_size is 20
+        updatePaginationControls();
+        noResults.style.display = "none";
+        learningPathsList.style.display = "flex";
+    } else {
+        learningPathsList.innerHTML = "";
+        noResults.style.display = "block";
+        learningPathsList.style.display = "none";
+        totalPages = 1;
+        updatePaginationControls();
+    }
+}
+
+function updatePaginationControls() {
+    document.getElementById("page-info").textContent = `Page ${currentPage} of ${totalPages}`;
+    document.getElementById("prev-page").disabled = currentPage === 1;
+    document.getElementById("next-page").disabled = currentPage === totalPages;
+}
+
+function resetLearningPathForm() {
+    document.getElementById("learning-path-form").reset();
+    document.getElementById("path-id").value = "";
+    document.getElementById("courses-in-path-container").innerHTML = "";
+    selectedCourses = {};
+}
+
+async function loadLearningPathForEdit(pathId) {
+    const result = await api.getLearningPath(pathId);
+    if (result.success) {
+        const path = result.data;
+        document.getElementById("path-id").value = path.id;
+        document.getElementById("path-title-input").value = path.title;
+        document.getElementById("path-description-input").value = path.description;
+        document.getElementById("path-difficulty-input").value = path.difficulty_level;
+        document.getElementById("path-duration-input").value = path.estimated_duration_hours;
+        document.getElementById("path-status-input").value = path.status;
+        document.getElementById("path-tags-input").value = path.tags;
+        document.getElementById("path-prerequisites-input").value = path.prerequisites;
+        document.getElementById("path-objectives-input").value = path.learning_objectives;
+        document.getElementById("path-is-public-input").checked = path.is_public;
+        
+        // Populate courses in path
+        selectedCourses = {};
+        path.path_courses.forEach(pc => {
+            selectedCourses[pc.course.id] = pc.course;
+        });
+        renderCoursesInPath();
+    } else {
+        showToast("Error loading learning path for edit: " + getErrorMessage(result.error), "danger");
+    }
+}
+
+async function handleLearningPathSubmit(event) {
+    event.preventDefault();
+    showLoading("learning-path-form");
+    
+    const pathId = document.getElementById("path-id").value;
+    const data = {
+        title: document.getElementById("path-title-input").value,
+        description: document.getElementById("path-description-input").value,
+        difficulty_level: document.getElementById("path-difficulty-input").value,
+        estimated_duration_hours: parseInt(document.getElementById("path-duration-input").value),
+        status: document.getElementById("path-status-input").value,
+        tags: document.getElementById("path-tags-input").value,
+        prerequisites: document.getElementById("path-prerequisites-input").value,
+        learning_objectives: document.getElementById("path-objectives-input").value,
+        is_public: document.getElementById("path-is-public-input").checked,
+        courses: Object.values(selectedCourses).map(course => course.id) // Send only IDs
+    };
+    
+    let result;
+    if (pathId) {
+        result = await api.updateLearningPath(pathId, data);
+    } else {
+        result = await api.createLearningPath(data);
+    }
+    
+    if (result.success) {
+        showToast(`Learning Path ${pathId ? 'updated' : 'created'} successfully!`, "success");
+        bootstrap.Modal.getInstance(document.getElementById("createPathModal")).hide();
+        loadMyLearningPaths(); // Reload list
+    } else {
+        showToast(`Error ${pathId ? 'updating' : 'creating'} learning path: ` + getErrorMessage(result.error), "danger");
+    }
+    hideLoading("learning-path-form");
+}
+
+async function deleteLearningPath(pathId) {
+    if (confirm("Are you sure you want to delete this learning path? This action cannot be undone.")) {
+        const result = await api.deleteLearningPath(pathId);
+        if (result.success) {
+            showToast("Learning Path deleted successfully!", "success");
+            loadMyLearningPaths();
+        } else {
+            showToast("Error deleting learning path: " + getErrorMessage(result.error), "danger");
+        }
+    }
+}
+
+// Course search in modal functions
+async function searchCoursesForModal() {
+    const search = document.getElementById("course-search-input").value;
+    const params = {
+        page: currentCourseSearchPage,
+        search: search,
+        is_public: true // Only show public courses in search
+    };
+    
+    showLoading("course-search-results");
+    const result = await api.getCourses(params);
+    hideLoading("course-search-results");
+    
+    const searchResultsContainer = document.getElementById("course-search-results");
+    if (result.success && result.data.results.length > 0) {
+        searchResultsContainer.innerHTML = result.data.results.map(course => `
+            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+               onclick="addCourseToPath(${course.id}, '${course.title.replace(/'/g, '\'')}', '${course.short_description.replace(/'/g, '\'')}')">
+                <div>
+                    <h6 class="mb-1">${course.title}</h6>
+                    <small class="text-muted">${course.short_description}</small>
+                </div>
+                <button class="btn btn-sm btn-outline-success" type="button">Add</button>
+            </a>
+        `).join('');
+        totalCourseSearchPages = Math.ceil(result.data.count / 20);
+        updateCourseSearchPaginationControls();
+    } else {
+        searchResultsContainer.innerHTML = '<div class="list-group-item text-muted">No courses found.</div>';
+        totalCourseSearchPages = 1;
+        updateCourseSearchPaginationControls();
+    }
+}
+
+function updateCourseSearchPaginationControls() {
+    document.getElementById("course-page-info").textContent = `Page ${currentCourseSearchPage} of ${totalCourseSearchPages}`;
+    document.getElementById("course-prev-page").disabled = currentCourseSearchPage === 1;
+    document.getElementById("course-next-page").disabled = currentCourseSearchPage === totalCourseSearchPages;
+}
+
+function addCourseToPath(courseId, courseTitle, courseDescription) {
+    if (!selectedCourses[courseId]) {
+        selectedCourses[courseId] = { id: courseId, title: courseTitle, short_description: courseDescription };
+        renderCoursesInPath();
+        showToast(`Added '${courseTitle}' to path.`, "success");
+    } else {
+        showToast(`'${courseTitle}' is already in the path.`, "info");
+    }
+}
+
+function removeCourseFromPath(courseId) {
+    if (confirm("Are you sure you want to remove this course from the path?")) {
+        delete selectedCourses[courseId];
+        renderCoursesInPath();
+        showToast("Course removed from path.", "success");
+    }
+}
+
+function renderCoursesInPath() {
+    const container = document.getElementById("courses-in-path-container");
+    container.innerHTML = "";
+    
+    if (Object.keys(selectedCourses).length === 0) {
+        container.innerHTML = '<p class="text-muted">No courses added to this path yet.</p>';
+        return;
+    }
+    
+    Object.values(selectedCourses).forEach(course => {
+        const div = document.createElement("div");
+        div.className = "d-flex justify-content-between align-items-center border p-2 mb-2 rounded";
+        div.innerHTML = `
+            <div>
+                <h6>${course.title}</h6>
+                <small class="text-muted">${course.short_description}</small>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger" onclick="removeCourseFromPath(${course.id})">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    });
+}
+</script>
+{% endblock %}

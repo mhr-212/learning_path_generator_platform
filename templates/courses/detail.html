@@ -1,0 +1,385 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ course.title }} - Learning Path Generator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div id="alert-container"></div>
+    <div class="row">
+        <div class="col-lg-8">
+            <h1 class="mb-3" id="course-title"></h1>
+            <p class="lead text-muted" id="course-short-description"></p>
+            
+            <div class="d-flex align-items-center mb-3">
+                <span class="badge bg-primary me-2" id="course-difficulty"></span>
+                <span class="badge bg-info text-dark me-2" id="course-type"></span>
+                <span class="text-muted me-3"><i class="far fa-clock me-1"></i> <span id="course-duration"></span> hours</span>
+                <span class="text-muted"><i class="fas fa-user me-1"></i> <span id="course-instructor"></span></span>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="mb-2">Description</h4>
+                <p id="course-description"></p>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="mb-2">Learning Outcomes</h4>
+                <p id="course-outcomes"></p>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="mb-2">Prerequisites</h4>
+                <p id="course-prerequisites"></p>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="mb-2">Tags</h4>
+                <div id="course-tags"></div>
+            </div>
+            
+            <div class="mb-4">
+                <a id="course-url" href="#" target="_blank" class="btn btn-gradient-primary btn-lg">
+                    <i class="fas fa-external-link-alt me-2"></i>Go to Course
+                </a>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="mb-2">Reviews (<span id="total-reviews"></span>)</h4>
+                <div id="course-reviews-list" class="list-group mb-3">
+                    <!-- Reviews will be loaded here -->
+                </div>
+                <button id="add-review-btn" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reviewModal" style="display: none;">
+                    <i class="fas fa-star me-1"></i>Add Your Review
+                </button>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Course Details</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Platform:</strong> <span id="course-platform"></span></p>
+                    <p><strong>Category:</strong> <span id="course-category"></span></p>
+                    <p><strong>Price:</strong> <span id="course-price"></span></p>
+                    <p><strong>Rating:</strong> <span id="course-rating"></span></p>
+                    <p><strong>Language:</strong> <span id="course-language"></span></p>
+                    <p><strong>Certificate:</strong> <span id="course-certificate"></span></p>
+                    <p><strong>Public:</strong> <span id="course-is-public"></span></p>
+                    <p><strong>Status:</strong> <span id="course-status"></span></p>
+                    <p><strong>Created:</strong> <span id="course-created-at"></span></p>
+                    <p><strong>Last Updated:</strong> <span id="course-updated-at"></span></p>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Your Progress</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div id="user-progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    <p id="user-progress-status"></p>
+                    <button id="mark-course-completed-btn" class="btn btn-success btn-sm mt-2" style="display: none;">Mark as Completed</button>
+                    <button id="update-progress-btn" class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#progressModal" style="display: none;">Update Progress</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="reviewModalLabel">Add Your Review</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="review-form">
+                    <input type="hidden" id="review-id">
+                    <div class="mb-3">
+                        <label for="review-rating" class="form-label">Rating (1-5 Stars)</label>
+                        <input type="number" class="form-control" id="review-rating" min="1" max="5" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="review-text" class="form-label">Review Text (Optional)</label>
+                        <textarea class="form-control" id="review-text" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="progressModalLabel">Update Course Progress</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="progress-form">
+                    <div class="mb-3">
+                        <label for="progress-percentage" class="form-label">Progress Percentage (0-100)</label>
+                        <input type="number" class="form-control" id="progress-percentage" min="0" max="100" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="time-spent-hours" class="form-label">Time Spent (Hours)</label>
+                        <input type="number" class="form-control" id="time-spent-hours" min="0" step="0.1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="progress-notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="progress-notes" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Progress</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const courseId = window.location.pathname.split("/")[2];
+    if (courseId) {
+        loadCourseDetail(courseId);
+    }
+    
+    document.getElementById("review-form").addEventListener("submit", handleReviewSubmit);
+    document.getElementById("progress-form").addEventListener("submit", handleProgressSubmit);
+});
+
+async function loadCourseDetail(courseId) {
+    showLoading("course-title");
+    const result = await api.getCourse(courseId);
+    hideLoading("course-title");
+    
+    if (result.success) {
+        const course = result.data;
+        
+        document.getElementById("course-title").textContent = course.title;
+        document.getElementById("course-short-description").textContent = course.short_description;
+        document.getElementById("course-difficulty").textContent = course.difficulty_level.charAt(0).toUpperCase() + course.difficulty_level.slice(1);
+        document.getElementById("course-type").textContent = course.course_type.charAt(0).toUpperCase() + course.course_type.slice(1);
+        document.getElementById("course-duration").textContent = course.duration_hours;
+        document.getElementById("course-instructor").textContent = course.instructor;
+        document.getElementById("course-description").textContent = course.description;
+        document.getElementById("course-outcomes").textContent = course.learning_outcomes || "N/A";
+        document.getElementById("course-prerequisites").textContent = course.prerequisites || "None";
+        document.getElementById("course-url").href = course.url;
+        
+        const tagsContainer = document.getElementById("course-tags");
+        tagsContainer.innerHTML = "";
+        if (course.tag_list && course.tag_list.length > 0) {
+            course.tag_list.forEach(tag => {
+                const span = document.createElement("span");
+                span.className = "badge bg-info text-dark me-1 mb-1";
+                span.textContent = tag;
+                tagsContainer.appendChild(span);
+            });
+        } else {
+            tagsContainer.innerHTML = 
+                `<span class="text-muted">No tags.</span>`;
+        }
+        
+        document.getElementById("course-platform").textContent = course.platform;
+        document.getElementById("course-category").textContent = course.category ? course.category.name : "N/A";
+        document.getElementById("course-price").textContent = course.is_free ? "Free" : `$${course.price}`;
+        document.getElementById("course-rating").textContent = course.average_rating_display;
+        document.getElementById("course-language").textContent = course.language;
+        document.getElementById("course-certificate").textContent = course.certificate_available ? "Yes" : "No";
+        document.getElementById("course-is-public").textContent = course.is_public ? "Yes" : "No";
+        document.getElementById("course-status").textContent = course.status.charAt(0).toUpperCase() + course.status.slice(1);
+        document.getElementById("course-created-at").textContent = new Date(course.created_at).toLocaleDateString();
+        document.getElementById("course-updated-at").textContent = new Date(course.updated_at).toLocaleDateString();
+        
+        // Reviews
+        document.getElementById("total-reviews").textContent = course.reviews.length;
+        const reviewsList = document.getElementById("course-reviews-list");
+        reviewsList.innerHTML = "";
+        if (course.reviews && course.reviews.length > 0) {
+            course.reviews.forEach(review => {
+                const div = document.createElement("div");
+                div.className = "list-group-item";
+                div.innerHTML = `
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">${review.user.username} - ${"⭐".repeat(review.rating)}</h6>
+                        <small>${new Date(review.created_at).toLocaleDateString()}</small>
+                    </div>
+                    <p class="mb-1">${review.review_text || "No review text provided."}</p>
+                `;
+                reviewsList.appendChild(div);
+            });
+        } else {
+            reviewsList.innerHTML = 
+                `<div class="list-group-item text-muted">No reviews yet. Be the first to review this course!</div>`;
+        }
+        
+        // User specific actions
+        if (auth.isAuthenticated()) {
+            document.getElementById("add-review-btn").style.display = "block";
+            if (course.user_review) {
+                document.getElementById("add-review-btn").textContent = "Edit Your Review";
+                document.getElementById("review-id").value = course.user_review.id;
+                document.getElementById("review-rating").value = course.user_review.rating;
+                document.getElementById("review-text").value = course.user_review.review_text;
+            } else {
+                document.getElementById("add-review-btn").textContent = "Add Your Review";
+                document.getElementById("review-id").value = "";
+                document.getElementById("review-rating").value = "";
+                document.getElementById("review-text").value = "";
+            }
+            
+            // User progress
+            const progressBar = document.getElementById("user-progress-bar");
+            const progressStatus = document.getElementById("user-progress-status");
+            const markCompletedBtn = document.getElementById("mark-course-completed-btn");
+            const updateProgressBtn = document.getElementById("update-progress-btn");
+            
+            if (course.user_progress) {
+                progressBar.style.width = `${course.user_progress.progress_percentage}%`;
+                progressBar.setAttribute("aria-valuenow", course.user_progress.progress_percentage);
+                progressBar.textContent = `${course.user_progress.progress_percentage}%`;
+                progressStatus.textContent = `You are ${course.user_progress.progress_percentage}% through this course.`;
+                
+                document.getElementById("progress-percentage").value = course.user_progress.progress_percentage;
+                document.getElementById("time-spent-hours").value = course.user_progress.time_spent_hours;
+                document.getElementById("progress-notes").value = course.user_progress.notes;
+                
+                if (course.user_progress.is_completed) {
+                    progressStatus.textContent = "You have completed this course!";
+                    progressBar.classList.remove("bg-success");
+                    progressBar.classList.add("bg-primary");
+                    markCompletedBtn.style.display = "none";
+                    updateProgressBtn.style.display = "none";
+                } else if (course.user_progress.progress_percentage < 100) {
+                    markCompletedBtn.style.display = "block";
+                    updateProgressBtn.style.display = "block";
+                    markCompletedBtn.onclick = async () => {
+                        const confirmComplete = confirm("Are you sure you want to mark this course as completed?");
+                        if (confirmComplete) {
+                            const completeResult = await api.markCourseCompleted(course.id);
+                            if (completeResult.success) {
+                                showToast("Course marked as completed!", "success");
+                                loadCourseDetail(courseId); // Reload to update status
+                            } else {
+                                showToast("Error marking course as completed: " + getErrorMessage(completeResult.error), "danger");
+                            }
+                        }
+                    };
+                }
+            } else {
+                progressBar.style.width = "0%";
+                progressBar.setAttribute("aria-valuenow", 0);
+                progressBar.textContent = "0%";
+                progressStatus.textContent = "You haven't started this course yet.";
+                markCompletedBtn.style.display = "none";
+                updateProgressBtn.style.display = "none";
+                
+                const actionsContainer = document.getElementById("course-url").parentNode;
+                const startCourseBtn = document.createElement("button");
+                startCourseBtn.className = "btn btn-gradient-success btn-lg mt-3";
+                startCourseBtn.innerHTML = 
+                    `<i class="fas fa-play-circle me-2"></i>Start Course`;
+                startCourseBtn.onclick = async () => {
+                    const startResult = await api.startCourse(course.id);
+                    if (startResult.success) {
+                        showToast("Course started!", "success");
+                        loadCourseDetail(courseId); // Reload to update status
+                    } else {
+                        showToast("Error starting course: " + getErrorMessage(startResult.error), "danger");
+                    }
+                };
+                actionsContainer.appendChild(startCourseBtn);
+            }
+        } else {
+            progressStatus.textContent = "Login to track your progress.";
+            document.getElementById("add-review-btn").style.display = "none";
+            document.getElementById("mark-course-completed-btn").style.display = "none";
+            document.getElementById("update-progress-btn").style.display = "none";
+            
+            const actionsContainer = document.getElementById("course-url").parentNode;
+            const loginToStartBtn = document.createElement("a");
+            loginToStartBtn.href = "/login/";
+            loginToStartBtn.className = "btn btn-gradient-success btn-lg mt-3";
+            loginToStartBtn.innerHTML = 
+                `<i class="fas fa-sign-in-alt me-2"></i>Login to Start Course`;
+            actionsContainer.appendChild(loginToStartBtn);
+        }
+        
+    } else {
+        showToast("Error loading course details: " + getErrorMessage(result.error), "danger");
+        document.getElementById("course-title").textContent = "Course Not Found";
+        document.getElementById("course-short-description").textContent = "The course you are looking for does not exist or is not accessible.";
+    }
+}
+
+async function handleReviewSubmit(event) {
+    event.preventDefault();
+    showLoading("review-form");
+    
+    const courseId = window.location.pathname.split("/")[2];
+    const reviewId = document.getElementById("review-id").value;
+    const rating = document.getElementById("review-rating").value;
+    const reviewText = document.getElementById("review-text").value;
+    
+    const data = {
+        course_id: courseId,
+        rating: rating,
+        review_text: reviewText
+    };
+    
+    let result;
+    if (reviewId) {
+        result = await api.updateCourseReview(reviewId, data);
+    } else {
+        result = await api.createCourseReview(data);
+    }
+    
+    if (result.success) {
+        showToast(`Review ${reviewId ? 'updated' : 'added'} successfully!`, "success");
+        bootstrap.Modal.getInstance(document.getElementById("reviewModal")).hide();
+        loadCourseDetail(courseId); // Reload to update reviews
+    } else {
+        showToast(`Error ${reviewId ? 'updating' : 'adding'} review: ` + getErrorMessage(result.error), "danger");
+    }
+    hideLoading("review-form");
+}
+
+async function handleProgressSubmit(event) {
+    event.preventDefault();
+    showLoading("progress-form");
+    
+    const courseId = window.location.pathname.split("/")[2];
+    const progressPercentage = document.getElementById("progress-percentage").value;
+    const timeSpentHours = document.getElementById("time-spent-hours").value;
+    const notes = document.getElementById("progress-notes").value;
+    
+    const data = {
+        progress_percentage: progressPercentage,
+        time_spent_hours: timeSpentHours,
+        notes: notes
+    };
+    
+    const result = await api.updateCourseProgress(courseId, data);
+    
+    if (result.success) {
+        showToast("Progress updated successfully!", "success");
+        bootstrap.Modal.getInstance(document.getElementById("progressModal")).hide();
+        loadCourseDetail(courseId); // Reload to update progress
+    } else {
+        showToast("Error updating progress: " + getErrorMessage(result.error), "danger");
+    }
+    hideLoading("progress-form");
+}
+</script>
+{% endblock %}

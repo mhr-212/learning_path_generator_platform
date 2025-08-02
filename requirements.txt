@@ -1,0 +1,13 @@
+Django==5.2.4
+djangorestframework==3.16.0
+django-filter==25.1
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.7.0
+drf-yasg==1.21.10
+Pillow==11.3.0
+PyJWT==2.10.1
+PyYAML==6.0.2
+pytz==2025.2
+packaging==25.0
+inflection==0.5.1
+uritemplate==4.2.0

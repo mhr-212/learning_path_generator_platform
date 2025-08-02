@@ -1,0 +1,167 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Learning Path Detail - Learning Path Generator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h1 class="card-title" id="path-title"></h1>
+                    <p class="card-text" id="path-description"></p>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary me-2" id="path-difficulty"></span>
+                        <span class="text-muted me-3"><i class="far fa-clock me-1"></i> <span id="path-duration"></span> hours</span>
+                        <span class="text-muted"><i class="fas fa-user me-1"></i> Created by <span id="path-creator"></span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Learning Objectives</h5>
+                    <p id="path-objectives"></p>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Prerequisites</h5>
+                    <p id="path-prerequisites"></p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Courses in this Path (<span id="total-courses"></span>)</h5>
+                    <div id="path-courses-list" class="list-group">
+                        <!-- Courses will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Path Overview</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>Status:</strong> <span id="path-status"></span></li>
+                        <li><strong>Public:</strong> <span id="path-is-public"></span></li>
+                        <li><strong>Created:</strong> <span id="path-created-at"></span></li>
+                        <li><strong>Last Updated:</strong> <span id="path-updated-at"></span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Your Progress</h5>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div id="user-progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    <p id="user-progress-status"></p>
+                    <div id="path-actions">
+                        <!-- Action buttons will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const pathId = window.location.pathname.split("/")[2];
+    if (pathId) {
+        loadLearningPathDetail(pathId);
+    }
+});
+
+async function loadLearningPathDetail(pathId) {
+    const result = await api.getLearningPath(pathId);
+    
+    if (result.success) {
+        const path = result.data;
+        
+        document.getElementById("path-title").textContent = path.title;
+        document.getElementById("path-description").textContent = path.description;
+        document.getElementById("path-difficulty").textContent = path.difficulty_level;
+        document.getElementById("path-duration").textContent = path.estimated_duration_hours;
+        document.getElementById("path-creator").textContent = path.creator.username;
+        document.getElementById("path-objectives").textContent = path.learning_objectives;
+        document.getElementById("path-prerequisites").textContent = path.prerequisites || "None";
+        
+        document.getElementById("total-courses").textContent = path.total_courses;
+        const coursesList = document.getElementById("path-courses-list");
+        coursesList.innerHTML = "";
+        if (path.path_courses && path.path_courses.length > 0) {
+            path.path_courses.forEach(pc => {
+                const course = pc.course;
+                const li = document.createElement("a");
+                li.href = `/courses/${course.id}/`;
+                li.className = "list-group-item list-group-item-action";
+                li.innerHTML = `
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">${pc.order}. ${course.title}</h5>
+                        <small>${course.duration_hours} hours</small>
+                    </div>
+                    <p class="mb-1">${course.short_description}</p>
+                    <small>${course.platform}</small>
+                `;
+                coursesList.appendChild(li);
+            });
+        } else {
+            coursesList.innerHTML = '<p>No courses in this path yet.</p>';
+        }
+        
+        document.getElementById("path-status").textContent = path.status;
+        document.getElementById("path-is-public").textContent = path.is_public ? "Yes" : "No";
+        document.getElementById("path-created-at").textContent = new Date(path.created_at).toLocaleDateString();
+        document.getElementById("path-updated-at").textContent = new Date(path.updated_at).toLocaleDateString();
+        
+        // User progress
+        const progressBar = document.getElementById("user-progress-bar");
+        const progressStatus = document.getElementById("user-progress-status");
+        const actionsContainer = document.getElementById("path-actions");
+        
+        if (auth.isAuthenticated()) {
+            if (path.user_progress) {
+                const progress = path.user_progress.progress;
+                progressBar.style.width = `${progress}%`;
+                progressBar.setAttribute("aria-valuenow", progress);
+                progressBar.textContent = `${progress}%`;
+                progressStatus.textContent = `You have completed ${progress}% of this path.`;
+                
+                if (path.user_progress.is_completed) {
+                    actionsContainer.innerHTML = '<p class="text-success">You have completed this learning path!</p>';
+                } else {
+                    actionsContainer.innerHTML = '<button id="mark-completed-btn" class="btn btn-success">Mark as Completed</button>';
+                    document.getElementById("mark-completed-btn").addEventListener("click", async () => {
+                        const result = await api.markLearningPathCompleted(path.id);
+                        if (result.success) {
+                            loadLearningPathDetail(pathId);
+                        }
+                    });
+                }
+            } else {
+                progressBar.style.width = "0%";
+                progressBar.setAttribute("aria-valuenow", 0);
+                progressBar.textContent = "0%";
+                progressStatus.textContent = "You have not started this path yet.";
+                actionsContainer.innerHTML = '<button id="start-learning-btn" class="btn btn-primary">Start Learning</button>';
+                document.getElementById("start-learning-btn").addEventListener("click", async () => {
+                    const result = await api.startLearningPath(path.id);
+                    if (result.success) {
+                        loadLearningPathDetail(pathId);
+                    }
+                });
+            }
+        } else {
+            progressStatus.textContent = "Log in to track your progress.";
+            actionsContainer.innerHTML = '<a href="/login/" class="btn btn-primary">Log In to Start</a>';
+        }
+    } else {
+        document.querySelector('.container').innerHTML = '<h1>Learning Path not found</h1>';
+    }
+}
+</script>
+{% endblock %}

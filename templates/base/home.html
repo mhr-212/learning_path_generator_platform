@@ -1,0 +1,92 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Welcome to the Learning Path Generator{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<header class="bg-light text-center py-5">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Design Your Learning Journey</h1>
+        <p class="lead text-muted">Create personalized learning paths, discover courses, and achieve your goals.</p>
+        <div id="home-cta">
+            <a href="/register/" class="btn btn-primary btn-lg mt-3">Get Started for Free</a>
+        </div>
+    </div>
+</header>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-4">
+                <div class="p-4">
+                    <i class="fas fa-route fa-3x text-primary mb-3"></i>
+                    <h3 class="h4">Create Custom Paths</h3>
+                    <p class="text-muted">Build learning paths tailored to your specific needs and interests.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="p-4">
+                    <i class="fas fa-book-open fa-3x text-primary mb-3"></i>
+                    <h3 class="h4">Discover Courses</h3>
+                    <p class="text-muted">Explore a vast library of courses from various platforms and providers.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="p-4">
+                    <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                    <h3 class="h4">Track Your Progress</h3>
+                    <p class="text-muted">Monitor your learning journey and stay motivated with detailed analytics.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">What Our Users Say</h2>
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <p class="card-text">"This platform has been a game-changer for my career. I can finally create a structured learning plan that works for me."</p>
+                        <footer class="blockquote-footer">John Doe</footer>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <p class="card-text">"I love the ability to discover new courses and add them to my learning paths. It's like having a personal learning assistant."</p>
+                        <footer class="blockquote-footer">Jane Smith</footer>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <p class="card-text">"The progress tracking feature is amazing. It keeps me motivated and focused on my goals."</p>
+                        <footer class="blockquote-footer">Peter Jones</footer>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const homeCta = document.getElementById('home-cta');
+    if (auth.isAuthenticated()) {
+        homeCta.innerHTML = `
+            <a href="/learning-paths/" class="btn btn-primary btn-lg mt-3">Explore Learning Paths</a>
+            <a href="/courses/" class="btn btn-outline-primary btn-lg mt-3">Discover Courses</a>
+        `;
+    }
+});
+</script>
+{% endblock %}

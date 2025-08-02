@@ -1,0 +1,163 @@
+{% extends 'base/base.html' %}
+
+{% block title %}My Courses - Learning Path Generator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h1 class="mb-0">My Courses</h1>
+            <p class="lead text-muted">Manage the courses you are enrolled in.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="/courses/" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>Discover New Courses
+            </a>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="input-group">
+                <input type="text" id="search-input" class="form-control" placeholder="Search your courses...">
+                <button class="btn btn-primary" type="button" id="search-button">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <select id="status-filter" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="not_started">Not Started</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select id="sort-by" class="form-select">
+                <option value="-enrollment_date">Most Recent</option>
+                <option value="enrollment_date">Oldest</option>
+                <option value="course__title">Title (A-Z)</option>
+                <option value="-course__title">Title (Z-A)</option>
+                <option value="-progress">Highest Progress</option>
+                <option value="progress">Lowest Progress</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-outline-secondary w-100" id="apply-filters-button">
+                <i class="fas fa-filter me-2"></i>Apply Filters
+            </button>
+        </div>
+    </div>
+    
+    <div id="my-courses-list" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <!-- My courses will be loaded here -->
+    </div>
+    
+    <div id="pagination-controls" class="d-flex justify-content-center mt-4">
+        <button class="btn btn-outline-primary me-2" id="prev-page" disabled>Previous</button>
+        <span class="align-self-center" id="page-info">Page 1 of 1</span>
+        <button class="btn btn-outline-primary ms-2" id="next-page" disabled>Next</button>
+    </div>
+    
+    <div id="loading-spinner" class="text-center mt-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading your courses...</p>
+    </div>
+    
+    <div id="no-results" class="text-center mt-5" style="display: none;">
+        <p class="lead text-muted">You are not enrolled in any courses yet.</p>
+        <a href="/courses/" class="btn btn-primary">
+            <i class="fas fa-search me-2"></i>Discover Courses
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+let totalPages = 1;
+
+document.addEventListener("DOMContentLoaded", function() {
+    requireAuth();
+    loadMyCourses();
+    
+    document.getElementById("search-button").addEventListener("click", function() {
+        currentPage = 1;
+        loadMyCourses();
+    });
+    
+    document.getElementById("search-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            currentPage = 1;
+            loadMyCourses();
+        }
+    });
+    
+    document.getElementById("apply-filters-button").addEventListener("click", function() {
+        currentPage = 1;
+        loadMyCourses();
+    });
+    
+    document.getElementById("prev-page").addEventListener("click", function() {
+        if (currentPage > 1) {
+            currentPage--;
+            loadMyCourses();
+        }
+    });
+    
+    document.getElementById("next-page").addEventListener("click", function() {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadMyCourses();
+        }
+    });
+});
+
+async function loadMyCourses() {
+    const search = document.getElementById("search-input").value;
+    const status = document.getElementById("status-filter").value;
+    const ordering = document.getElementById("sort-by").value;
+    
+    const params = {
+        page: currentPage,
+        search: search,
+        status: status,
+        ordering: ordering,
+    };
+    
+    showLoading("my-courses-list");
+    const result = await api.getMyCourses(params);
+    hideLoading("my-courses-list");
+    
+    const coursesList = document.getElementById("my-courses-list");
+    const noResults = document.getElementById("no-results");
+    
+    if (result.success && result.data.results.length > 0) {
+        coursesList.innerHTML = result.data.results.map(enrollment => createCourseCard(enrollment.course, true)).join("");
+        totalPages = Math.ceil(result.data.count / 20); // Assuming page_size is 20
+        updatePaginationControls();
+        noResults.style.display = "none";
+        coursesList.style.display = "flex";
+    } else {
+        coursesList.innerHTML = "";
+        noResults.style.display = "block";
+        coursesList.style.display = "none";
+        totalPages = 1;
+        updatePaginationControls();
+    }
+}
+
+function updatePaginationControls() {
+    document.getElementById("page-info").textContent = `Page ${currentPage} of ${totalPages}`;
+    document.getElementById("prev-page").disabled = currentPage === 1;
+    document.getElementById("next-page").disabled = currentPage === totalPages;
+}
+</>
+{% endblock %}

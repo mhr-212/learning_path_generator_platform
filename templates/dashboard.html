@@ -1,0 +1,137 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Dashboard - Learning Path Generator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div id="loading-spinner" class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading dashboard...</p>
+    </div>
+
+    <div id="dashboard-content" style="display: none;">
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-0" id="welcome-message"></h1>
+                <p class="lead text-muted">Here's a summary of your learning journey.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="/profile/" class="btn btn-outline-primary">
+                    <i class="fas fa-user-edit me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- New User Notification -->
+        <div id="new-user-notification" class="alert alert-info" style="display: none;">
+            <h4 class="alert-heading">Welcome to the Learning Path Generator!</h4>
+            <p>It looks like you haven't started any learning paths or courses yet. You can start by exploring the available <a href="/learning-paths/" class="alert-link">learning paths</a> and <a href="/courses/" class="alert-link">courses</a>.</p>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row g-4 mb-5" id="stats-container">
+            <!-- Stats will be loaded here -->
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-route me-2"></i>Recent Learning Paths</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush" id="recent-learning-paths">
+                            <!-- Recent paths will be loaded here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-book me-2"></i>Recent Courses</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush" id="recent-courses">
+                            <!-- Recent courses will be loaded here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    if (!requireAuth()) return;
+
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const dashboardContent = document.getElementById('dashboard-content');
+    const newUserNotification = document.getElementById('new-user-notification');
+
+    try {
+        const result = await auth.getDashboard();
+
+        if (result.success) {
+            const data = result.data;
+            
+            // Welcome message
+            document.getElementById('welcome-message').textContent = `Welcome, ${data.user.username}!`;
+
+            // Show new user notification if they haven't started anything
+            if (data.statistics.learning_paths_started === 0 && data.statistics.courses_started === 0) {
+                newUserNotification.style.display = 'block';
+            }
+
+            // Populate stats
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = 
+                createDashboardCard('Learning Paths Started', data.statistics.learning_paths_started, 'fas fa-route', 'primary') +
+                createDashboardCard('Courses Started', data.statistics.courses_started, 'fas fa-book', 'success') +
+                createDashboardCard('Paths Completed', data.statistics.learning_paths_completed, 'fas fa-check-circle', 'info') +
+                createDashboardCard('Courses Completed', data.statistics.courses_completed, 'fas fa-graduation-cap', 'warning');
+
+            // Populate recent learning paths
+            const recentLearningPaths = document.getElementById('recent-learning-paths');
+            if (data.recent_activity.learning_paths.length > 0) {
+                recentLearningPaths.innerHTML = data.recent_activity.learning_paths.map(path => `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="/learning-paths/${path.id}/">${path.title}</a>
+                        <span class="badge bg-primary rounded-pill">${path.progress}%</span>
+                    </li>
+                `).join('');
+            } else {
+                recentLearningPaths.innerHTML = '<li class="list-group-item text-muted">No recent learning paths.</li>';
+            }
+
+            // Populate recent courses
+            const recentCourses = document.getElementById('recent-courses');
+            if (data.recent_activity.courses.length > 0) {
+                recentCourses.innerHTML = data.recent_activity.courses.map(course => `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="/courses/${course.id}/">${course.title}</a>
+                        <span class="badge bg-success rounded-pill">${course.progress}%</span>
+                    </li>
+                `).join('');
+            } else {
+                recentCourses.innerHTML = '<li class="list-group-item text-muted">No recent courses.</li>';
+            }
+
+            loadingSpinner.style.display = 'none';
+            dashboardContent.style.display = 'block';
+        } else {
+            loadingSpinner.innerHTML = '<p class="text-danger">Failed to load dashboard data.</p>';
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        loadingSpinner.innerHTML = '<p class="text-danger">An error occurred while loading the dashboard.</p>';
+    }
+});
+</script>
+{% endblock %}

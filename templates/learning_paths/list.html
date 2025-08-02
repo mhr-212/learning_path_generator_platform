@@ -1,0 +1,129 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Learning Paths - Learning Path Generator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Filters</h5>
+                    <div class="mb-3">
+                        <label for="search-input" class="form-label">Search</label>
+                        <input type="text" id="search-input" class="form-control" placeholder="Search...">
+                    </div>
+                    <div class="mb-3">
+                        <label for="difficulty-filter" class="form-label">Difficulty</label>
+                        <select id="difficulty-filter" class="form-select">
+                            <option value="">All</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sort-by" class="form-label">Sort by</label>
+                        <select id="sort-by" class="form-select">
+                            <option value="-created_at">Newest</option>
+                            <option value="created_at">Oldest</option>
+                            <option value="title">Title</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100" id="apply-filters-button">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learning Paths -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Explore Learning Paths</h1>
+                <a href="/my-learning-paths/" class="btn btn-outline-primary">My Learning Paths</a>
+            </div>
+            <div id="learning-paths-list" class="row row-cols-1 row-cols-md-2 g-4">
+                <!-- Learning paths will be loaded here -->
+            </div>
+            <div id="pagination-controls" class="d-flex justify-content-center mt-4">
+                <!-- Pagination will be loaded here -->
+            </div>
+            <div id="loading-spinner" class="text-center mt-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+            <div id="no-results" class="text-center mt-5" style="display: none;">
+                <p>No learning paths found.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+let totalPages = 1;
+
+document.addEventListener("DOMContentLoaded", function() {
+    loadLearningPaths();
+    
+    document.getElementById("apply-filters-button").addEventListener("click", function() {
+        currentPage = 1;
+        loadLearningPaths();
+    });
+});
+
+async function loadLearningPaths() {
+    const search = document.getElementById("search-input").value;
+    const difficulty = document.getElementById("difficulty-filter").value;
+    const ordering = document.getElementById("sort-by").value;
+    
+    const params = {
+        page: currentPage,
+        search: search,
+        difficulty_level: difficulty,
+        ordering: ordering,
+        is_public: true
+    };
+    
+    showLoading("learning-paths-list");
+    const result = await api.getLearningPaths(params);
+    hideLoading("learning-paths-list");
+    
+    const learningPathsList = document.getElementById("learning-paths-list");
+    const noResults = document.getElementById("no-results");
+    
+    if (result.success && result.data.results.length > 0) {
+        learningPathsList.innerHTML = result.data.results.map(path => createLearningPathCard(path)).join("");
+        totalPages = Math.ceil(result.data.count / 10); // Assuming page_size is 10
+        updatePaginationControls();
+        noResults.style.display = "none";
+        learningPathsList.style.display = "flex";
+    } else {
+        learningPathsList.innerHTML = "";
+        noResults.style.display = "block";
+        learningPathsList.style.display = "none";
+        totalPages = 1;
+        updatePaginationControls();
+    }
+}
+
+function updatePaginationControls() {
+    const paginationControls = document.getElementById("pagination-controls");
+    let paginationHtml = '';
+    if (totalPages > 1) {
+        paginationHtml += `<ul class="pagination">`;
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;
+        }
+        paginationHtml += `</ul>`;
+    }
+    paginationControls.innerHTML = paginationHtml;
+}
+
+function goToPage(page) {
+    currentPage = page;
+    loadLearningPaths();
+}
+</script>
+{% endblock %}

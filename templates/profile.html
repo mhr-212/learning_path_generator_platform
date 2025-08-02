@@ -1,0 +1,18 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Profile - Learning Path Generator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">User Profile</h1>
+    <p>This is where your profile information will be displayed. This page is under construction.</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        requireAuth();
+    });
+</script>
+{% endblock %}
