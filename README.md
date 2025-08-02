@@ -50,7 +50,7 @@ A comprehensive Django REST API application for creating personalized learning j
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/3de14bcd-4528-4266-8ee4-ad4bec366f28" />
 
 - **Course Details Page**
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/bf650c04-ee18-4c18-a9f6-5c002a23dc89" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/d1e6db65-086f-4dff-8f2c-7fd2ce447f27" />
 
 ## 🛠 Technologies Used
 
