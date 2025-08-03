@@ -35,7 +35,7 @@ A comprehensive Django REST API application for creating personalized learning j
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/5f379883-7d3a-4f78-bcd8-a548bf1f96ad" />
 
 - **Dashboard Page**
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/01bdc95e-083a-4454-989b-c6a917b67677" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/9c1aed63-dc7b-4bc6-a9fa-e4592d6589e9" />
 
 - **Learning Paths Page**
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/c07aa1da-46c6-45d9-a686-50bdbe02236b" />
